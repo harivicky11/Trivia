@@ -38,11 +38,22 @@ def create_app(test_config=None):
                              'GET,PUT,POST,DELETE,OPTIONS')
         return response
 
-    '''
-  @TODO: 
-  Create an endpoint to handle GET requests 
-  for all available categories.
-  '''
+    @app.route('/categories')
+    def get_categories():
+      categories = Category.query.all()
+      categories_dict = {}
+      for category in categories:
+        categories_dict[category.id] = category.type
+
+      #abort 404 if no categories found
+      if(len(categories_dict) == 0):
+        abort(404)
+      
+      # return data to view
+      return jsonify({
+        'success': True,
+        'categories': categories_dict
+      })
 
     '''
   @TODO: 
@@ -113,5 +124,12 @@ def create_app(test_config=None):
   Create error handlers for all expected errors 
   including 404 and 422. 
   '''
+    @app.errorhandler(404)
+    def not_found(error):
+        return jsonify({
+            "success": False,
+            "error": 404,
+            "message": "resource not found"
+        }), 404
 
     return app
