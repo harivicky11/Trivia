@@ -10,6 +10,7 @@ QUESTIONS_PER_PAGE = 10
 
 # utility for paginating questions
 
+
 def paginate_questions(request, selection):
     page = request.args.get('page', 1, type=int)
     start = (page - 1) * QUESTIONS_PER_PAGE
@@ -29,9 +30,13 @@ def create_app(test_config=None):
     # set up CORS, allowing all origins
     CORS(app, resources={'/': {'origins': '*'}})
 
-    '''
-  @TODO: Use the after_request decorator to set Access-Control-Allow
-  '''
+    @app.after_request
+    def after_request(response):
+        response.headers.add('Access-Control-Allow-Headers',
+                             'Content-Type,Autharization,true')
+        response.headers.add('Access-Control-Allow-Methods',
+                             'GET,PUT,POST,DELETE,OPTIONS')
+        return response
 
     '''
   @TODO: 
