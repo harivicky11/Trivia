@@ -105,9 +105,6 @@ def create_app(test_config=None):
 
     @app.route('/questions', methods=['POST'])
     def post_question():
-        '''
-        Handles POST requests for creating new questions and searching questions.
-        '''
         # load the request body
         body = request.get_json()
 
@@ -171,10 +168,6 @@ def create_app(test_config=None):
 
     @app.route('/categories/<int:id>/questions')
     def get_questions_by_category(id):
-        '''
-        Handles GET requests for getting questions based on category.
-        '''
-
         # get the category by id
         category = Category.query.filter_by(id=id).one_or_none()
 
@@ -198,10 +191,6 @@ def create_app(test_config=None):
     
     @app.route('/quizzes', methods=['POST'])
     def get_random_quiz_question():
-        '''
-        Handles POST requests for playing quiz.
-        '''
-
         # load the request body
         body = request.get_json()
 
