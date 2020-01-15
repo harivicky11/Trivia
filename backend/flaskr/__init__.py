@@ -45,10 +45,10 @@ def create_app(test_config=None):
       for category in categories:
         categories_dict[category.id] = category.type
 
-      #abort 404 if no categories found
+      # abort 404 if no categories found
       if(len(categories_dict) == 0):
         abort(404)
-      
+
       # return data to view
       return jsonify({
         'success': True,
@@ -80,27 +80,94 @@ def create_app(test_config=None):
             'categories': categories_dict
         })
 
+    @app.route('/questions/<int:id>', methods=['DELETE'])
+    def delete_question(id):
+        try:
+            # get the question by id
+            question = Question.query.filter_by(id=id).one_or_none()
 
-    '''
-  @TODO: 
-  Create an endpoint to DELETE question using a question ID. 
+            # abort 404 if no question found
+            if question is None:
+                abort(404)
 
-  TEST: When you click the trash icon next to a question, the question will be removed.
-  This removal will persist in the database and when you refresh the page. 
-  '''
+            # delete the question
+            question.delete()
 
-    '''
-  @TODO: 
-  Create an endpoint to POST a new question, 
-  which will require the question and answer text, 
-  category, and difficulty score.
+            # return success response
+            return jsonify({
+                'success': True,
+                'deleted': id
+            })
 
-  TEST: When you submit a question on the "Add" tab, 
-  the form will clear and the question will appear at the end of the last page
-  of the questions list in the "List" tab.  
-  '''
+        except:
+            # abort if problem deleting question
+            abort(422)
 
-    '''
+    @app.route('/questions', methods=['POST'])
+    def post_question():
+        '''
+        Handles POST requests for creating new questions and searching questions.
+        '''
+        # load the request body
+        body = request.get_json()
+
+        # if search term is present
+        if (body.get('searchTerm')):
+            search_term = body.get('searchTerm')
+
+            # query the database using search term
+            selection = Question.query.filter(
+                Question.question.ilike(f'%{search_term}%')).all()
+
+            # 404 if no results found
+            if (len(selection) == 0):
+                abort(404)
+
+            # paginate the results
+            paginated = paginate_questions(request, selection)
+
+            # return results
+            return jsonify({
+                'success': True,
+                'questions': paginated,
+                'total_questions': len(Question.query.all())
+            })
+        # if no search term, create new question
+        else:
+            # load data from body
+            new_question = body.get('question')
+            new_answer = body.get('answer')
+            new_difficulty = body.get('difficulty')
+            new_category = body.get('category')
+
+            # ensure all fields have data
+            if ((new_question is None) or (new_answer is None)
+                    or (new_difficulty is None) or (new_category is None)):
+                abort(422)
+
+            try:
+                # create and insert new question
+                question = Question(question=new_question, answer=new_answer,
+                                    difficulty=new_difficulty, category=new_category)
+                question.insert()
+
+                # get all questions and paginate
+                selection = Question.query.order_by(Question.id).all()
+                current_questions = paginate_questions(request, selection)
+
+                # return data to view
+                return jsonify({
+                    'success': True,
+                    'created': question.id,
+                    'question_created': question.question,
+                    'questions': current_questions,
+                    'total_questions': len(Question.query.all())
+                })
+
+            except:
+                # abort unprocessable if exception
+                abort(422)
+
   @TODO: 
   Create a POST endpoint to get questions based on a search term. 
   It should return any questions for whom the search term 
