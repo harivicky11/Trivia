@@ -30,7 +30,7 @@ Install dependencies by navigating to the `/backend` directory and running:
 pip install -r requirements.txt
 ```
 
-## Running the Frontend in Dev Mode
+## Running the FRONTEND in Dev Mode
 
 The frontend app was built using create-react-app. In order to run the app in development mode use ```npm start```. You can change the script in the ```package.json``` file. 
 
@@ -40,7 +40,7 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser. T
 npm start
 ```
 
-## Running the Server
+## Running the BACKEND
 
 From within the `backend` directory first ensure you are working using your created virtual environment.
 
@@ -56,7 +56,11 @@ on windows machine
 ```bash
 set FLASK_APP=flaskr
 set FLASK_ENV=development
+flask run
 ```
+## Populating the Database
+psql trivia < trivia.psql
+
 ## Testing
 To run the tests, run
 ```

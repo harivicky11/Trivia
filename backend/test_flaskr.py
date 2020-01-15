@@ -15,7 +15,8 @@ class TriviaTestCase(unittest.TestCase):
         self.app = create_app()
         self.client = self.app.test_client
         self.database_name = "trivia_test"
-        self.database_path = "postgres://postgres:soba@{}/{}".format('localhost:5432', self.database_name)
+        self.database_path = "postgres://postgres:soba@{}/{}".format(
+            'localhost:5432', self.database_name)
         setup_db(self.app, self.database_path)
 
         # sample question for use in tests
@@ -32,7 +33,7 @@ class TriviaTestCase(unittest.TestCase):
             self.db.init_app(self.app)
             # create all tables
             self.db.create_all()
-    
+
     def tearDown(self):
         """Executed after reach test"""
         pass
@@ -253,6 +254,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'bad request')
+
 
 # Make the tests conveniently executable
 if __name__ == "__main__":

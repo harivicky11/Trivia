@@ -40,24 +40,24 @@ def create_app(test_config=None):
 
     @app.route('/categories')
     def get_categories():
-      categories = Category.query.all()
-      categories_dict = {}
-      for category in categories:
-        categories_dict[category.id] = category.type
+        categories = Category.query.all()
+        categories_dict = {}
+        for category in categories:
+            categories_dict[category.id] = category.type
 
-      # abort 404 if no categories found
-      if(len(categories_dict) == 0):
-        abort(404)
+        # abort 404 if no categories found
+        if(len(categories_dict) == 0):
+            abort(404)
 
-      # return data to view
-      return jsonify({
-        'success': True,
-        'categories': categories_dict
-      })
+        # return data to view
+        return jsonify({
+            'success': True,
+            'categories': categories_dict
+        })
 
     @app.route('/questions')
     def get_questions():
-        # get all questions and paginate
+            # get all questions and paginate
         selection = Question.query.all()
         total_questions = len(selection)
         current_questions = paginate_questions(request, selection)
@@ -165,7 +165,6 @@ def create_app(test_config=None):
                 # abort unprocessable if exception
                 abort(422)
 
-
     @app.route('/categories/<int:id>/questions')
     def get_questions_by_category(id):
         # get the category by id
@@ -188,7 +187,7 @@ def create_app(test_config=None):
             'total_questions': len(Question.query.all()),
             'current_category': category.type
         })
-    
+
     @app.route('/quizzes', methods=['POST'])
     def get_random_quiz_question():
         # load the request body
@@ -247,7 +246,7 @@ def create_app(test_config=None):
             'question': question.format()
         })
 
-#error handlers
+# error handlers
 
     @app.errorhandler(404)
     def not_found(error):
