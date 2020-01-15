@@ -168,42 +168,98 @@ def create_app(test_config=None):
                 # abort unprocessable if exception
                 abort(422)
 
-  @TODO: 
-  Create a POST endpoint to get questions based on a search term. 
-  It should return any questions for whom the search term 
-  is a substring of the question. 
 
-  TEST: Search by any phrase. The questions list will update to include 
-  only question that include that string within their question. 
-  Try using the word "title" to start. 
-  '''
+    @app.route('/categories/<int:id>/questions')
+    def get_questions_by_category(id):
+        '''
+        Handles GET requests for getting questions based on category.
+        '''
 
-    '''
-  @TODO: 
-  Create a GET endpoint to get questions based on category. 
+        # get the category by id
+        category = Category.query.filter_by(id=id).one_or_none()
 
-  TEST: In the "List" tab / main screen, clicking on one of the 
-  categories in the left column will cause only questions of that 
-  category to be shown. 
-  '''
+        # abort 400 for bad request if category isn't found
+        if (category is None):
+            abort(400)
 
-    '''
-  @TODO: 
-  Create a POST endpoint to get questions to play the quiz. 
-  This endpoint should take category and previous question parameters 
-  and return a random questions within the given category, 
-  if provided, and that is not one of the previous questions. 
+        # get the matching questions
+        selection = Question.query.filter_by(category=category.id).all()
 
-  TEST: In the "Play" tab, after a user selects "All" or a category,
-  one question at a time is displayed, the user is allowed to answer
-  and shown whether they were correct or not. 
-  '''
+        # paginate the selection
+        paginated = paginate_questions(request, selection)
 
-    '''
-  @TODO: 
-  Create error handlers for all expected errors 
-  including 404 and 422. 
-  '''
+        # return the results
+        return jsonify({
+            'success': True,
+            'questions': paginated,
+            'total_questions': len(Question.query.all()),
+            'current_category': category.type
+        })
+    
+    @app.route('/quizzes', methods=['POST'])
+    def get_random_quiz_question():
+        '''
+        Handles POST requests for playing quiz.
+        '''
+
+        # load the request body
+        body = request.get_json()
+
+        # get the previous questions
+        previous = body.get('previous_questions')
+
+        # get the category
+        category = body.get('quiz_category')
+
+        # abort 400 if category or previous questions isn't found
+        if ((category is None) or (previous is None)):
+            abort(400)
+
+        # load questions all questions if "ALL" is selected
+        if (category['id'] == 0):
+            questions = Question.query.all()
+        # load questions for given category
+        else:
+            questions = Question.query.filter_by(category=category['id']).all()
+
+        # get total number of questions
+        total = len(questions)
+
+        # picks a random question
+        def get_random_question():
+            return questions[random.randrange(0, len(questions), 1)]
+
+        # checks to see if question has already been used
+        def check_if_used(question):
+            used = False
+            for q in previous:
+                if (q == question.id):
+                    used = True
+
+            return used
+
+        # get random question
+        question = get_random_question()
+
+        # check if used, execute until unused question found
+        while (check_if_used(question)):
+            question = get_random_question()
+
+            # if all questions have been tried, return without question
+            # necessary if category has <5 questions
+            if (len(previous) == total):
+                return jsonify({
+                    'success': True
+                })
+
+        # return the question
+        return jsonify({
+            'success': True,
+            'question': question.format()
+        })
+
+#error handlers
+
     @app.errorhandler(404)
     def not_found(error):
         return jsonify({
@@ -211,5 +267,21 @@ def create_app(test_config=None):
             "error": 404,
             "message": "resource not found"
         }), 404
+
+    @app.errorhandler(422)
+    def unprocessable(error):
+        return jsonify({
+            "success": False,
+            "error": 422,
+            "message": "unprocessable"
+        }), 422
+
+    @app.errorhandler(400)
+    def bad_request(error):
+        return jsonify({
+            "success": False,
+            "error": 400,
+            "message": "bad request"
+        }), 400
 
     return app
