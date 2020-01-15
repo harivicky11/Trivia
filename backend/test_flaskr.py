@@ -20,8 +20,8 @@ class TriviaTestCase(unittest.TestCase):
 
         # sample question for use in tests
         self.new_question = {
-            'question': 'Which four states make up the 4 Corners region of the US?',
-            'answer': 'Colorado, New Mexico, Arizona, Utah',
+            'question': 'What is what',
+            'answer': 'nothing',
             'difficulty': 3,
             'category': '3'
         }
@@ -100,6 +100,32 @@ class TriviaTestCase(unittest.TestCase):
 
         # check if question equals None after delete
         self.assertEqual(question, None)
+
+    def test_create_new_question(self):
+        """Tests question creation success"""
+
+        # get number of questions before post
+        questions_before = Question.query.all()
+
+        # create new question and load response data
+        response = self.client().post('/questions', json=self.new_question)
+        data = json.loads(response.data)
+
+        # get number of questions after post
+        questions_after = Question.query.all()
+
+        # see if the question has been created
+        question = Question.query.filter_by(id=data['created']).one_or_none()
+
+        # check status code and success message
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+
+        # check if one more question after post
+        self.assertTrue(len(questions_after) - len(questions_before) == 1)
+
+        # check that question is not None
+        self.assertIsNotNone(question)
 
 
 # Make the tests conveniently executable
